@@ -1,19 +1,12 @@
-const knex = require('knex');
+
 
 const router = require('express').Router();
 
-const knexConfig = {
-    client: 'sqlite3',
-    connection: {
-        filename: './data/lambda.db3'
-    },
-    useNullAsDefault: true
-}
+const Zoos = require('./zoos-model.js');
 
-const db = knex(knexConfig);
 
 router.get('/', (req, res) => {
-    db('zoos')
+    Zoos.find()
         .then(zoos => {
         res.status(200).json(zoos);
         })
@@ -23,8 +16,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-    db('zoos')
-        .where({ id: req.params.id })
+    Zoos.findById(req.params.id)
         .then(zoos => {
             res.status(200).json(zoos);
         })
@@ -34,10 +26,9 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-    db('zoos')
-        .insert(req.body, 'id')
-        .then(ids => {
-            res.status(201).json(ids);
+    Zoos.add(req.body)
+        .then(zoo => {
+            res.status(201).json(zoo);
         })
         .catch(error => {
             res.status(500).json(error);
@@ -45,10 +36,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-    const changes = req.body;
-    db('zoos')
-        .where({ id: req.params.id })
-        .update(changes)
+    Zoos.update(req.params.id, req.body)
         .then(count => {
             if(count > 0){
                 const unit = count > 1 ? 'records' : 'record';
@@ -63,9 +51,7 @@ router.put('/:id', (req, res) => {
 })
 
 router.delete('/:id', (req, res) => {
-    db('zoos')
-        .where({ id: req.params.id })
-        .delete()
+    Zoos.remove(req.params.id)
         .then(count => {
             if(count > 0){
                 const unit = count > 1 ? 'records' : 'record';
