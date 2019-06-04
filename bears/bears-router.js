@@ -2,6 +2,8 @@ const knex = require('knex');
 
 const router = require('express').Router();
 
+const Bears = require('./bears-model.js');
+
 const knexConfig = {
     client: 'sqlite3',
     connection: {
@@ -13,7 +15,7 @@ const knexConfig = {
 const db = knex(knexConfig);
 
 router.get('/', (req, res) => {
-    db('bears')
+    Bears.find()
         .then(bears => {
         res.status(200).json(bears);
         })
@@ -23,8 +25,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-    db('bears')
-        .where({ id: req.params.id })
+    Bears.findById(req.params.id)
         .then(bears => {
             res.status(200).json(bears);
         })
@@ -34,10 +35,9 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-    db('bears')
-        .insert(req.body, 'id')
-        .then(ids => {
-            res.status(201).json(ids);
+    Bears.add(req.body)
+        .then(bear => {
+            res.status(201).json(bear);
         })
         .catch(error => {
             res.status(500).json(error);
@@ -45,10 +45,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-    const changes = req.body;
-    db('bears')
-        .where({ id: req.params.id })
-        .update(changes)
+    Bears.update(req.params.id, req.body)
         .then(count => {
             if(count > 0){
                 const unit = count > 1 ? 'records' : 'record';
@@ -63,9 +60,7 @@ router.put('/:id', (req, res) => {
 })
 
 router.delete('/:id', (req, res) => {
-    db('bears')
-        .where({ id: req.params.id })
-        .delete()
+    Bears.remove(req.params.id)
         .then(count => {
             if(count > 0){
                 const unit = count > 1 ? 'records' : 'record';
